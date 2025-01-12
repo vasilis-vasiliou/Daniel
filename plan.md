@@ -1,0 +1,10 @@
+- setup selenium 
+- nescessary to have geckodriver (firefox) or chromium (chrome)
+  - guide : https://www.cyberithub.com/how-to-install-geckodriver-for-selenium-in-linux/#Step_1_Prerequisites
+- login in twitter with basibluepill account 
+- experiment a little with needed interactions to understand how they work 
+  - scrolling 
+  - getting div elements 
+  - collecting data in a columnar format
+- collect tweets with search terms #Daniel #kategida for sep1-sep12 2023
+- before anything else , of highest priority is location   

@@ -1,0 +1,137 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import pandas as pd
+import os
+import time
+from datetime import datetime
+
+def get_tweets(search):
+    # Load environment variables
+    EMAIL = os.getenv("X_email")
+    PASSWORD = os.getenv("X_pass")
+
+    # Initialize the driver
+    driver = webdriver.Chrome()
+
+    try:
+        # Navigate to the login page
+        driver.get("https://x.com/login")
+        
+        # Wait for the email input field to be visible and fill in the email
+        email_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.NAME, "text"))
+        )
+        email_input.send_keys(EMAIL)
+        
+        # Locate and click the "Next" button
+        next_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'css-146c3p1') and .//span[text()='Next']]"))
+        )
+        next_button.click()
+        
+        # Wait for the potential username input field
+        try:
+            username_input = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.XPATH, "//input[@data-testid='ocfEnterTextTextInput']"))
+            )
+            username_input.send_keys('basibluepill')
+            
+            # Locate and click the "Next" button after entering the username
+            next_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'css-146c3p1') and .//span[text()='Next']]"))
+            )
+            next_button.click()
+        except:
+            print("Username input not required.")
+        
+        # Wait for the password field to be visible and fill in the password
+        password_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.NAME, "password"))
+        )
+        password_input.send_keys(PASSWORD)
+        
+        # Submit the form by pressing Enter
+        password_input.send_keys(Keys.RETURN)
+        
+        # Wait to ensure the login is successful or redirected
+        WebDriverWait(driver, 10).until(
+            EC.url_changes("https://x.com/login")
+        )
+        
+        print("Login successful!")
+    except Exception as e:
+        print(f"An error occurred while trying to login: {e}")
+        # Search for tweets
+    explore_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//a[@aria-label='Search and explore']"))
+    )
+    
+    # Click the explore icon
+    explore_button.click()
+        
+    search_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@data-testid='SearchBox_Search_Input']"))
+        )
+      
+        # Input the search query
+    search_query = search
+    search_input.send_keys(search_query)
+    search_input.send_keys(Keys.RETURN)
+        
+        # Wait for the search results to load
+    WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//article"))
+        )
+        
+        # Collect tweets
+    tweets = []
+    tweet_ids = set()  # To avoid duplicates
+    scroll_attempts = 0
+    max_scroll_attempts = 50  # Safeguard against infinite scrolling
+
+    while len(tweets) < 100 and scroll_attempts < max_scroll_attempts:
+            try:
+                # Dynamically locate tweet elements in each iteration
+                tweet_elements = WebDriverWait(driver, 10).until(
+                    EC.presence_of_all_elements_located((By.XPATH, "//div[@data-testid='tweetText']"))
+                )
+                
+                for tweet_element in tweet_elements:
+                    try:
+                        tweet_id = tweet_element.get_attribute("id")
+                        tweet_text = tweet_element.text
+                        
+                        if tweet_id and tweet_id not in tweet_ids:
+                            tweets.append({"id": tweet_id, "text": tweet_text})
+                            tweet_ids.add(tweet_id)
+                            if len(tweets) >= 100:
+                                break
+                    except Exception as inner_ex:
+                        # Handle any issues with individual tweet elements
+                        print(f"Skipping a tweet due to error: {inner_ex}")
+                
+                # Scroll down to load more tweets
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(2)  # Allow time for new content to load
+                scroll_attempts += 1
+
+            except Exception as e:
+                print(f"Error while scrolling or locating tweets: {e}")
+                break  # Exit the loop if repeated issues occur
+
+    print(f"Collected {len(tweets)} tweets.")
+
+
+
+def export_tweets_collected(tweets):    # Create a DataFrame and export to CSV
+    df = pd.DataFrame(tweets)
+    current_date = datetime.now()
+    df.to_csv(f"data/tweets{current_date}.csv", index=False)
+    print("Exported tweets to tweets.csv")
+
+
+

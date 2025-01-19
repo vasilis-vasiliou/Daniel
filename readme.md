@@ -6,7 +6,7 @@ This project was created as part of the Designing Disobedience call in Neme Gall
 - Constantinos Constantinou 
 - Vasilis Vasiliou
 - Giannis Floulis 
-- Louza Vradi
+- Louiza Vradi
 ### Repo owner contact   
 - basibluepill@googlemail.com
 ### About this repo 

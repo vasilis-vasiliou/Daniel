@@ -1,4 +1,4 @@
 .env
 *.csv
-data
+data/*
 tweets/__pycache__

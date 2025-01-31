@@ -8,9 +8,8 @@
   - collecting data in a columnar format
   - locate elements to gather by id's
 - collect tweets with search terms #Daniel #kategida for sep1-sep12 2023
-- before anything else , of highest priority is location, date , full text
+- get location, date , full text
+- break search terms in weekly chunks to circumvent X limit on too general terms 
 After data collection: 
-- visualize timeline 
-- basic aggregate statistics
-- expand search terms , establish a tweet_pk if there is one
+- visualize timeline count tweets over time : social media attention span decline
 - extract location as a column -> spatiotemporal viz

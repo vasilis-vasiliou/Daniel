@@ -8,29 +8,33 @@ Our project aims to slow the rush of sensationalism, creating a space where the 
 
 This project invites reflection on how crises are shaped by power, media systems, and geopolitical structures. It asks: who gets to be seen, and who is left in the margins? Ultimately, we seek to challenge how we consume news and engage with global stories, inspiring reflection and action toward a more just future.
 
-### Scraping tweets from X given specific search parameter
-Simple function using selenium , personal X credentials for collecting tweets quickly
 
 ### Why this project was created 
 This project was created as part of the Designing Disobedience call in Neme Gallery. 
 https://www.neme.org/projects/designing-disobedience  
 ![alt text](image.png)
 
-
 ### Creators/collaborators 
 - Constantinos Constantinou 
-- Vasilis Vasiliou
+- Vasilis Vasiliou 
 - Giannis Floulis 
 - Louiza Vradi
 
-### Repo owner contact   
-- basibluepill@googlemail.com
+#### Scraping tweets from X given specific search parameter
+Simple function using selenium , personal X credentials for collecting tweets quickly
 
 ### About this repo 
 This repository is for the data analysis part of the project.
 Feel free to clone and adapt for your own purposes. 
 
-### Setup prerequis ites:
+
+
+### Repo owner contact   
+- basibluepill@googlemail.com
+
+
+
+### Setup prerequisites:
 - install pip : https://pip.pypa.io/en/stable/installation/
 - install pipenv : https://pipenv.pypa.io/en/latest/installation.html
 
@@ -41,3 +45,7 @@ Feel free to clone and adapt for your own purposes.
   - X_email = 
   - X_pass = 
 - run the data_gather.py file or work in the interactive jupyter notebook environment
+- the search_query also accepts list of search terms , put your collection of search terms into a list
+
+#### What the code is doing : 
+- Super simple basically, emulates a user using selenium. Logs in, finds the explore button puts the list of terms in order, scrolls and collects tweet text and date. Note : still to figure out how to identify repost , hence it returns duplicates. 

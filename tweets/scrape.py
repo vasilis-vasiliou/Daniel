@@ -65,89 +65,93 @@ def get_tweets(search,max_tweets=100):
         print("Login successful!")
     except Exception as e:
         print(f"An error occurred while trying to login: {e}")
-        # Search for tweets
-    explore_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//a[@aria-label='Search and explore']"))
-    )
     
-    # Click the explore icon
-    explore_button.click()
-        
-    search_input = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//input[@data-testid='SearchBox_Search_Input']"))
-        )
-      
-        # Input the search query
-    search_query = search
-    search_input.send_keys(search_query)
-    search_input.send_keys(Keys.RETURN)
-        
-        # Wait for the search results to load
-    WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//article"))
-        )
-        
-        # Collect tweets
-# Define the scraping logic
+    print(f'starting the search process for the terms supplied: {search}')
+            # Start collecting tweets for search term
     tweets = []
     tweet_ids = set()  # To avoid duplicates
     scroll_attempts = 0
     max_scroll_attempts = 50  # Safeguard against infinite scrolling
-
-    while len(tweets) < max_tweets and scroll_attempts < max_scroll_attempts:
-        try:
-            # Dynamically locate tweet elements in each iteration
-            tweet_elements = WebDriverWait(driver, 10).until(
-                EC.presence_of_all_elements_located((By.XPATH, "//article[@data-testid='tweet']"))
+    for search_query in search:
+        explore_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//a[@aria-label='Search and explore']"))
+    )
+    
+    # Click the explore icon
+        explore_button.click()
+        
+        search_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@data-testid='SearchBox_Search_Input']"))
+        )
+    
+        print(f'Now searching : {search_query}')
+        search_input.send_keys(search_query)
+        search_input.send_keys(Keys.RETURN)
+            
+        # Wait for the search results to load
+        WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//article"))
             )
+            
 
-            for tweet_element in tweet_elements:
-                try:
-                    # Extract unique tweet ID
-                    tweet_id = tweet_element.get_attribute("data-tweet-id") or str(hash(tweet_element.text))
 
-                    # Extract tweet text
-                    tweet_text_element = tweet_element.find_element(By.XPATH, "//div[@data-testid='tweetText']")
-                    tweet_text = tweet_text_element.text if tweet_text_element else "N/A"
+        while len(tweets) < max_tweets and scroll_attempts < max_scroll_attempts:
+            try:
+                # Dynamically locate tweet elements in each iteration
+                tweet_elements = WebDriverWait(driver, 10).until(
+                    EC.presence_of_all_elements_located((By.XPATH, "//article[@data-testid='tweet']"))
+                )
 
-                    # Extract user name
-                    user_name_element = tweet_element.find_element(By.XPATH, ".//div[@data-testid='User-Name']//a[@role='link']")
-                    user_name = user_name_element.text if user_name_element else "N/A"
+                for tweet_element in tweet_elements:
+                    try:
+                        # Extract unique tweet ID
+                        tweet_id = tweet_element.get_attribute("data-tweet-id") or str(hash(tweet_element.text))
 
-                    # Extract timestamp
-                    timestamp_element = tweet_element.find_element(By.XPATH, "//time")
-                    timestamp = timestamp_element.get_attribute("datetime") if timestamp_element else "N/A"
+                        # Extract tweet text
+                        tweet_text_element = tweet_element.find_element(By.XPATH, "//div[@data-testid='tweetText']")
+                        tweet_text = tweet_text_element.text if tweet_text_element else "N/A"
 
-                    # Avoid duplicates
-                    if tweet_id and tweet_id not in tweet_ids:
-                        tweets.append({
-                            "id": tweet_id,
-                            "text": tweet_text,
-                            "user_name": user_name,
-                            "timestamp": timestamp,
-                        })
-                        tweet_ids.add(tweet_id)
-                        print(f'tweet by {user_name} @{timestamp} saying : {tweet_text}' )
-                        if len(tweets) >= 100:
-                            break
-                except Exception as inner_ex:
-                    # Handle any issues with individual tweet elements
-                    print(f"Skipping a tweet due to error: {inner_ex}")
+                        # Extract user name
+                        user_name_element = tweet_element.find_element(By.XPATH, ".//div[@data-testid='User-Name']//a[@role='link']")
+                        user_name = user_name_element.text if user_name_element else "N/A"
 
-            # Scroll down to load more tweets
-            scroll_height = driver.execute_script("return document.body.scrollHeight")
-            print(scroll_height)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            new_scroll_height = driver.execute_script("return document.body.scrollHeight")
-            time.sleep(2)  # Allow time for new content to load
-            scroll_attempts += 1
-            if scroll_height == new_scroll_height:
-                print('no more tweets. breaking ..')
-                break
+                        # Extract timestamp
+                        timestamp_element = tweet_element.find_element(By.XPATH, "//time")
+                        timestamp = timestamp_element.get_attribute("datetime") if timestamp_element else "N/A"
 
-        except Exception as e:
-            print(f"Error while scrolling or locating tweets: {e}")
-            break  # Exit the loop if repeated issues occur
+
+                        # views locator : #id__zrtchw1xwla > div:nth-child(4) > a > div > div.css-175oi2r.r-xoduu5.r-1udh08x > span > span > span
+                        # Avoid duplicates
+                        if tweet_id and tweet_id not in tweet_ids:
+                            tweets.append({
+                                "id": tweet_id,
+                                "text": tweet_text,
+                                "user_name": user_name,
+                                "timestamp": timestamp,
+                            })
+                            tweet_ids.add(tweet_id)
+                            print(f'tweet by {user_name} @{timestamp} saying : {tweet_text}' )
+                            if len(tweets) >= 100:
+                                break
+                    except Exception as inner_ex:
+                        # Handle any issues with individual tweet elements
+                        print(f"Skipping a tweet due to error: {inner_ex}")
+
+                # Scroll down to load more tweets
+                scroll_height = driver.execute_script("return document.body.scrollHeight")
+                print(scroll_height)
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                new_scroll_height = driver.execute_script("return document.body.scrollHeight")
+                time.sleep(2)  # Allow time for new content to load
+                scroll_attempts += 1
+                if scroll_height == new_scroll_height:
+                    print('no more tweets. breaking ..')
+                    break
+
+            except Exception as e:
+                print(f"Error while scrolling or locating tweets: {e}")
+                break  # Exit the loop if repeated issues occur
+        
     driver.close()
     return tweets
 

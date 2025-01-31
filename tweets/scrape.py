@@ -9,7 +9,7 @@ import os
 import time
 from datetime import datetime
 
-def get_tweets(search,max_tweets):
+def get_tweets(search,max_tweets=100):
     # Load environment variables
     EMAIL = os.getenv("X_email")
     PASSWORD = os.getenv("X_pass")
